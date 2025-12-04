@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 from PIL import Image
 import openai
-
+print(openai.__version__)
 st.set_page_config(page_title="人像說話影片生成器", page_icon="🎬", layout="centered")
 
 st.title("🎬 人像說話影片生成器")
