@@ -3,23 +3,7 @@ import time
 import requests
 import streamlit as st
 from PIL import Image
-#
-import requests
 
-API_KEY = "你的API Key"
-url = "https://api.deepgram.com/v1/speak?model=aura-asteria-en"
-
-headers = {
-    "Authorization": f"Token {API_KEY}",
-    "Content-Type": "application/json"
-}
-data = {"text": "Hello world"}
-
-resp = requests.post(url, headers=headers, json=data)
-print(resp.status_code)
-print(resp.headers.get("Content-Type"))
-
-#
 st.set_page_config(page_title="人像說話影片生成器", page_icon="🎬", layout="centered")
 
 st.title("🎬 人像說話影片生成器")
