@@ -15,14 +15,16 @@ text = st.text_area("輸入要說的文字", placeholder="例如：大家好，�
 
 can_run = img_file is not None and (text is not None and text.strip() != "")
 
-# 讀取 API Key
+# Secrets
 DEEPGRAM_API_KEY = st.secrets.get("DEEPGRAM_API_KEY")
+AZURE_SPEECH_KEY = st.secrets.get("AZURE_SPEECH_KEY")
+AZURE_SPEECH_REGION = st.secrets.get("AZURE_SPEECH_REGION")
 DID_API_KEY = st.secrets.get("DID_API_KEY")
 DID_API_BASE = "https://api.d-id.com/v1"
 
-def generate_audio(text: str) -> bytes:
-    """呼叫 Deepgram TTS 生成語音檔"""
-    url = "https://api.deepgram.com/v1/speak?model=aura-zh-tw"
+def generate_audio_deepgram(text: str) -> bytes:
+    """使用 Deepgram TTS (英文)"""
+    url = "https://api.deepgram.com/v1/speak?model=aura-2-thalia-en"
     headers = {
         "Authorization": f"Token {DEEPGRAM_API_KEY}",
         "Content-Type": "application/json"
@@ -30,7 +32,26 @@ def generate_audio(text: str) -> bytes:
     data = {"text": text}
     resp = requests.post(url, headers=headers, json=data)
     resp.raise_for_status()
-    return resp.content  # wav 檔案 bytes
+    return resp.content
+
+def generate_audio_azure(text: str) -> bytes:
+    """使用 Azure TTS (中文)"""
+    url = f"https://{AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1"
+    headers = {
+        "Ocp-Apim-Subscription-Key": AZURE_SPEECH_KEY,
+        "Content-Type": "application/ssml+xml",
+        "X-Microsoft-OutputFormat": "riff-16khz-16bit-mono-pcm"
+    }
+    ssml = f"""
+    <speak version='1.0' xml:lang='zh-TW'>
+        <voice xml:lang='zh-TW' xml:gender='Female' name='zh-TW-HsiaoYuNeural'>
+            {text}
+        </voice>
+    </speak>
+    """
+    resp = requests.post(url, headers=headers, data=ssml.encode("utf-8"))
+    resp.raise_for_status()
+    return resp.content
 
 def generate_talking_video(image_bytes: bytes, audio_bytes: bytes) -> bytes:
     """呼叫 D-ID API 生成人像說話影片"""
@@ -44,11 +65,9 @@ def generate_talking_video(image_bytes: bytes, audio_bytes: bytes) -> bytes:
     resp.raise_for_status()
     payload = resp.json()
 
-    # 取得 job_id
     job_id = payload.get("id")
     status_url = f"{DID_API_BASE}/talks/{job_id}"
 
-    # 輪詢直到影片完成
     for _ in range(60):
         status_resp = requests.get(status_url, headers=headers)
         status_resp.raise_for_status()
@@ -84,8 +103,13 @@ if st.button("生成影片", type="primary", disabled=not can_run):
         image.save(buf, format="PNG")
         img_bytes = buf.getvalue()
 
-        with st.spinner("正在生成語音..."):
-            audio_bytes = generate_audio(text.strip())
+        # 判斷語言：中文用 Azure，英文用 Deepgram
+        if any(ch >= u'\u4e00' and ch <= u'\u9fff' for ch in text):
+            with st.spinner("正在生成中文語音..."):
+                audio_bytes = generate_audio_azure(text.strip())
+        else:
+            with st.spinner("正在生成英文語音..."):
+                audio_bytes = generate_audio_deepgram(text.strip())
 
         with st.spinner("正在生成影片..."):
             video_bytes = generate_talking_video(img_bytes, audio_bytes)
