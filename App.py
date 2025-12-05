@@ -1,7 +1,9 @@
 import time
 import requests
 import streamlit as st
-
+st.write("Azure Key:", "已設定" if "AZURE_SPEECH_KEY" in st.secrets else "缺失")
+st.write("Region:", st.secrets.get("AZURE_SPEECH_REGION", "未設定"))
+st.write("D-ID Key:", "已設定" if "DID_API_KEY" in st.secrets else "缺失")
 st.set_page_config(page_title="人像說話影片生成器", page_icon="🎬", layout="centered")
 
 st.title("🎬 人像說話影片生成器")
