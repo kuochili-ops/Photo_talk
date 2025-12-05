@@ -1,9 +1,7 @@
 import time
 import requests
 import streamlit as st
-st.write("Azure Key:", "已設定" if "AZURE_SPEECH_KEY" in st.secrets else "缺失")
-st.write("Region:", st.secrets.get("AZURE_SPEECH_REGION", "未設定"))
-st.write("D-ID Key:", "已設定" if "DID_API_KEY" in st.secrets else "缺失")
+
 st.set_page_config(page_title="人像說話影片生成器", page_icon="🎬", layout="centered")
 
 st.title("🎬 人像說話影片生成器")
@@ -34,8 +32,10 @@ DID_API_KEY = st.secrets["DID_API_KEY"]
 
 def generate_audio_azure(text: str, voice: str = "zh-TW-HsiaoYuNeural") -> bytes:
     """使用 Azure Speech Service 生成語音"""
-    endpoint = f"ㄣㄣ = f"https://<region>.api.cognitive.microsoft.com/sts/v1.0/issuetoken"
-    headers = {n
+    # ⚠️ 注意：AZURE_SPEECH_REGION 必須是純區域名稱，例如 "japaneast"
+    endpoint = f"https://{AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1"
+    st.write("Debug: Azure endpoint =", endpoint)  # 顯示實際拼出的 URL，方便檢查
+    headers = {
         "Ocp-Apim-Subscription-Key": AZURE_SPEECH_KEY,
         "Content-Type": "application/ssml+xml",
         "X-Microsoft-OutputFormat": "riff-24khz-16bit-mono-pcm"
