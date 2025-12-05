@@ -34,7 +34,7 @@ DID_API_KEY = st.secrets["DID_API_KEY"]
 
 def generate_audio_azure(text: str, voice: str = "zh-TW-HsiaoYuNeural") -> bytes:
     """使用 Azure Speech Service 生成語音"""
-    endpoint = f"https://{AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1"
+    endpoint = f"https://https://japaneast.api.cognitive.microsoft.com/s/v1"
     headers = {
         "Ocp-Apim-Subscription-Key": AZURE_SPEECH_KEY,
         "Content-Type": "application/ssml+xml",
