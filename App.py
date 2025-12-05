@@ -19,9 +19,9 @@ voice = st.selectbox("選擇語音風格", ["zh-TW-HsiaoYuNeural", "zh-TW-Yating
 can_run = img_file is not None and (text is not None and text.strip() != "")
 
 # Secrets
-AZURE_SPEECH_KEY = st.secrets.get("AZURE_SPEECH_KEY")
-AZURE_SPEECH_REGION = st.secrets.get("AZURE_SPEECH_REGION", "japaneast")
-DID_API_KEY = st.secrets.get("DID_API_KEY")
+AZURE_SPEECH_KEY = st.secrets.get("9dWTGxS65ClqXhslTDJ6OOrjzoS8jlRriyVgfnhe4IPPjErVeEHqJQQJ99BLACi0881XJ3w3AAAYACOG9VOZ")
+AZURE_SPEECH_REGION = st.secrets.get("japaneast", "japaneast")
+DID_API_KEY = st.secrets.get("a3VvY2hpbGlAZ21haWwuY29t:e4xK3Qarg2-S-r8YOLArc")
 DID_API_BASE = "https://api.d-id.com/v1"
 
 if not AZURE_SPEECH_KEY or not DID_API_KEY:
