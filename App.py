@@ -5,7 +5,7 @@ import streamlit as st
 st.set_page_config(page_title="人像說話影片生成器", page_icon="🎬", layout="centered")
 
 st.title("🎬 人像說話影片生成器")
-st.caption("上傳人像照片 URL，輸入文字，生成一段人像說話影片。")
+st.caption("輸入人像圖片 URL，輸入文字，生成一段人像說話影片。")
 
 # 使用者輸入
 img_url = st.text_input("輸入人像圖片 URL (必須可公開存取)")
@@ -44,68 +44,6 @@ def generate_audio_azure(text: str, voice: str = "zh-TW-HsiaoYuNeural") -> bytes
         {text}
       </voice>
     </speak>
-    """
-    resp = requests.post(endpoint, headers=headers, data=ssml.encode("utf-8"))
-    resp.raise_for_status()
-    return resp.content
-
-def generate_talking_video(image_url: str, audio_url: str) -> str:
-    """呼叫 D-ID API 生成人像說話影片 (使用 URL)"""
-    url = "https://api.d-id.com/talks"
-    headers = {"Authorization": f"Bearer {DID_API_KEY}", "Content-Type": "application/json"}
-    payload = {
-        "source_url": image_url,
-        "script": {
-            "type": "audio",
-            "audio_url": audio_url
-        }
-    }
-    resp = requests.post(url, headers=headers, json=payload)
-    resp.raise_for_status()
-    job_id = resp.json().get("id")
-
-    status_url = f"https://api.d-id.com/talks/{job_id}"
-    progress_bar = st.progress(0)
-
-    for i in range(60):
-        status_resp = requests.get(status_url, headers=headers)
-        status_resp.raise_for_status()
-        status_json = status_resp.json()
-        state = status_json.get("status")
-        progress_bar.progress(int((i+1)/60*100))
-        if state == "done":
-            return status_json.get("result_url")
-        elif state == "error":
-            raise RuntimeError(status_json.get("error", "生成失敗"))
-        time.sleep(2)
-
-    raise TimeoutError("生成影片逾時")
-
-if st.button("生成影片", type="primary", disabled=not can_run):
-    try:
-        with st.spinner("正在生成語音..."):
-            audio_bytes = generate_audio_azure(text.strip(), voice=voice)
-
-        # ⚠️ 這裡需要把 speech.wav 上傳到雲端，取得公開 URL
-        with open("speech.wav", "wb") as f:
-            f.write(audio_bytes)
-        st.audio(audio_bytes, format="audio/wav")
-        st.warning("請將 speech.wav 上傳到雲端並取得公開 URL，然後貼到下方欄位。")
-
-        audio_url = st.text_input("請輸入剛剛上傳的 speech.wav 公開 URL")
-        if audio_url.strip() != "":
-            with st.spinner("正在生成影片..."):
-                video_url = generate_talking_video(img_url.strip(), audio_url.strip())
-            st.success("影片生成完成！")
-            st.video(video_url)
-            st.markdown(f"[下載影片]({video_url})")
-
-    except Exception as e:
-        st.error(f"錯誤：{e}")
-        st.stop()
-
-st.markdown("---")
-st.markdown("提示：請使用正面、光線充足的人像照片，效果最佳。")    </speak>
     """
     resp = requests.post(endpoint, headers=headers, data=ssml.encode("utf-8"))
     resp.raise_for_status()
